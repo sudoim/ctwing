@@ -5,6 +5,7 @@ namespace Sudoim\CTWing\Kernel;
 use GuzzleHttp\Client;
 use Pimple\Container;
 use Sudoim\CTWing\Kernel\Providers\ConfigServiceProvider;
+use Sudoim\CTWing\Kernel\Providers\LogServiceProvider;
 use Sudoim\CTWing\Kernel\Providers\HttpServiceProvider;
 
 /**
@@ -17,6 +18,7 @@ class ServiceContainer extends Container
 
     protected array $defaultProviders = [
         ConfigServiceProvider::class,
+        LogServiceProvider::class,
         HttpServiceProvider::class
     ];
 

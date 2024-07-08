@@ -3,6 +3,9 @@
 namespace Sudoim\CTWing\IoT\Kernel;
 
 use Closure;
+use GuzzleHttp\MessageFormatter;
+use GuzzleHttp\Middleware;
+use Psr\Log\LogLevel;
 use ReflectionClass;
 use Psr\Http\Message\RequestInterface;
 use Sudoim\CTWing\Kernel\Contracts\AccessTokenInterface;
@@ -88,6 +91,7 @@ class BaseClient
     protected function registerHttpMiddlewares(): void
     {
         $this->pushMiddleware($this->accessTokenMiddleware(), 'access_token');
+        $this->pushMiddleware($this->logMiddleware(), 'log');
     }
 
     protected function accessTokenMiddleware(): Closure
@@ -101,6 +105,13 @@ class BaseClient
                 return $handler($request, $options);
             };
         };
+    }
+
+    protected function logMiddleware(): Closure
+    {
+        $formatter = new MessageFormatter($this->app['config']['http.log_template'] ?? MessageFormatter::DEBUG);
+
+        return Middleware::log($this->app['logger'], $formatter, LogLevel::DEBUG);
     }
 
     public function __get(string $name)

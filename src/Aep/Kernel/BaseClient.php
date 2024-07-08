@@ -3,7 +3,10 @@
 namespace Sudoim\CTWing\Aep\Kernel;
 
 use Closure;
+use GuzzleHttp\MessageFormatter;
+use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;
+use Psr\Log\LogLevel;
 use Sudoim\CTWing\Kernel\Exceptions\InvalidConfigException;
 use Sudoim\CTWing\Kernel\Http\Response;
 use Sudoim\CTWing\Kernel\Http\StreamResponse;
@@ -125,6 +128,8 @@ class BaseClient
 
     protected function registerHttpMiddlewares(): void
     {
+        $this->pushMiddleware($this->logMiddleware(), 'log');
+
         if ($this->withTimestamp) {
             $this->pushMiddleware($this->timestampMiddleware(), 'timestamp');
         }
@@ -132,6 +137,13 @@ class BaseClient
         if ($this->needSignature) {
             $this->pushMiddleware($this->signatureMiddleware(), 'signature');
         }
+    }
+
+    protected function logMiddleware(): Closure
+    {
+        $formatter = new MessageFormatter($this->app['config']['http.log_template'] ?? MessageFormatter::DEBUG);
+
+        return Middleware::log($this->app['logger'], $formatter, LogLevel::DEBUG);
     }
 
     protected function timestampMiddleware(): Closure
