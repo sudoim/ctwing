@@ -52,6 +52,12 @@ class ServiceContainer extends Container
         }
     }
 
+    public function rebind($id, $value): void
+    {
+        $this->offsetUnset($id);
+        $this->offsetSet($id, $value);
+    }
+
     public function __get($id)
     {
         return $this->offsetGet($id);
