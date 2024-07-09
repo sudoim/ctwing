@@ -1,7 +1,5 @@
 <h1 align="center">CTWing</h1>
-
 <p align="center">非官方的中国电信物联网SDK</p>
-
 ## 环境要求
 
 - PHP >= 8.0
@@ -25,7 +23,32 @@ use Sudoim\CTWing\Factory;
 
 $config = [
     'app_key'    => '',
-    'app_secret' => ''
+    'app_secret' => '',
+
+    /**
+     * 日志配置
+     *
+     * level: 日志级别, 可选为：
+     *         debug/info/notice/warning/error/critical/alert/emergency
+     * path：日志文件位置(绝对路径!!!)，要求可写权限
+     */
+  	'log' => [
+        'default' => 'dev', // 默认使用的 channel，生产环境可以改为下面的 prod
+        'channels' => [
+            // 测试环境
+            'dev' => [
+                'driver' => 'single',
+                'path' => '/tmp/ctwing.log',
+                'level' => 'debug',
+            ],
+            // 生产环境
+            'prod' => [
+                'driver' => 'daily',
+                'path' => '/tmp/ctwing.log',
+                'level' => 'info',
+            ],
+        ],
+    ]
 ];
 
 $app = Factory::Aep($config);
@@ -84,7 +107,10 @@ $config = [
     'http' => [
         // 填写自己的应用接入地址和端口
         'base_uri' => 'https://device.api.ct10649.com:8743/'
-    ]
+    ],
+
+    // 日志配置，参考AEP日志配置
+    'log' => []
 ];
 
 $app = Factory::IoT($config);
