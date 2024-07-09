@@ -59,7 +59,7 @@ trait InteractsWithCache
     protected function createDefaultCache(): CacheInterface
     {
         if ($this->isSymfony43OrHigher()) {
-            return new Psr16Cache(new FilesystemAdapter('ctWing', 1500));
+            return new Psr16Cache(new FilesystemAdapter('CTWing', 1500));
         }
 
         return new FilesystemCache();
