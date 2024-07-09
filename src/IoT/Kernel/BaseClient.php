@@ -5,6 +5,7 @@ namespace Sudoim\CTWing\IoT\Kernel;
 use Closure;
 use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Middleware;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LogLevel;
 use ReflectionClass;
 use Psr\Http\Message\RequestInterface;
@@ -90,8 +91,38 @@ class BaseClient
 
     protected function registerHttpMiddlewares(): void
     {
+        $this->pushMiddleware($this->retryMiddleware(), 'retry');
         $this->pushMiddleware($this->accessTokenMiddleware(), 'access_token');
         $this->pushMiddleware($this->logMiddleware(), 'log');
+    }
+
+    protected function retryMiddleware(): Closure
+    {
+        return Middleware::retry(
+            function (
+                $retries,
+                RequestInterface $request,
+                ResponseInterface $response = null
+            ) {
+                // Limit the number of retries to 2
+                if ($retries < $this->app->config->get('http.max_retries', 1) && $response && $body = $response->getBody()) {
+                    // Retry on server errors
+                    $response = json_decode($body, true);
+
+                    if (!empty($response['resultcode']) && abs($response['resultcode']) === 1010005) {
+                        $this->accessToken->refresh();
+                        $this->app['logger']->debug('Retrying with refreshed access token.');
+
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+            function () {
+                return abs($this->app->config->get('http.retry_delay', 500));
+            }
+        );
     }
 
     protected function accessTokenMiddleware(): Closure
